@@ -9,8 +9,8 @@ The three candidate Feather files are included in `data/candidate_data/`, so a
 fresh clone does not require a separate data download.
 
 ```bash
-git clone <YOUR_PRIVATE_REPOSITORY_URL> retriever-repository
-cd retriever-repository/avito-retriever
+git clone https://github.com/kite121/avito-retriever.git
+cd avito-retriever
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
