@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 import numpy as np
 import pandas as pd
+import torch
 from sentence_transformers import CrossEncoder
 
 from avito_retriever.contracts import RANKING_COLUMNS
@@ -27,7 +28,16 @@ def rerank_with_cross_encoder(
         (query_text[int(row.query_id)], text_by_pair[(int(row.query_id), int(row.article_id))])
         for row in ordered.itertuples(index=False)
     ]
-    model = CrossEncoder(model_name, max_length=max_length, device=device)
+    # Full-size multilingual rerankers are memory-heavy in float32.  On CUDA/MPS
+    # inference in float16 keeps the same model and ranking head while avoiding
+    # unified-memory swapping on consumer hardware.
+    model_kwargs = {"torch_dtype": torch.float16} if device in {"cuda", "mps"} else None
+    model = CrossEncoder(
+        model_name,
+        max_length=max_length,
+        device=device,
+        model_kwargs=model_kwargs,
+    )
     scores = np.asarray(
         model.predict(pairs, batch_size=batch_size, show_progress_bar=True), dtype=float
     ).reshape(-1)
@@ -37,4 +47,3 @@ def rerank_with_cross_encoder(
         ordered.groupby("query_id")["score"].rank(method="first", ascending=False).astype(int)
     )
     return ordered[RANKING_COLUMNS].sort_values(["query_id", "rank"]).reset_index(drop=True)
-

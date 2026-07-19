@@ -1,0 +1,59 @@
+extends: ../base.yaml
+
+project:
+  name: fixed-submission
+
+preprocessing:
+  images:
+    enabled: false
+  ocr:
+    enabled: false
+
+sentencepiece:
+  model_type: unigram
+  vocab_size: 8000
+
+chunking:
+  size_tokens: 256
+  overlap_tokens: 48
+
+retrieval:
+  dense:
+    enabled: true
+    model_name: intfloat/multilingual-e5-small
+    batch_size: 32
+    top_k_articles: 100
+    device: auto
+  knn:
+    enabled: true
+    top_k: 10
+    lexical:
+      k1: 1.2
+      b: 0.30
+      depth: 30
+    dense:
+      depth: 30
+    neighbour_fusion:
+      rrf_k: 20
+      lexical_weight: 1.0
+      dense_weight: 1.0
+
+fusion:
+  rrf_k: 40
+  candidate_depth: 50
+  inputs:
+    bm25f: 1.0
+    dense: 1.0
+    knn: 0.7
+
+reranker:
+  enabled: true
+  model_name: BAAI/bge-reranker-v2-m3
+  candidate_depth: 20
+  chunks_per_article: 1
+  batch_size: 32
+  max_length: 256
+  device: auto
+
+final_ranking:
+  top_k: 10

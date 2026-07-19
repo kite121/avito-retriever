@@ -73,7 +73,12 @@ class DenseIndex:
             try:
                 import torch
 
-                requested_device = "cuda" if torch.cuda.is_available() else "cpu"
+                if torch.cuda.is_available():
+                    requested_device = "cuda"
+                elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+                    requested_device = "mps"
+                else:
+                    requested_device = "cpu"
             except ImportError:
                 requested_device = "cpu"
         self.device = requested_device

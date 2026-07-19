@@ -48,12 +48,17 @@ def _selected_result_files(project_root: Path) -> list[Path]:
 
     for root in [
         project_root / "artifacts" / "submissions",
+        project_root / "artifacts" / "fixed_solution",
         project_root / "artifacts" / "runs",
         project_root / "configs",
         project_root / "output" / "jupyter-notebook",
     ]:
         if root.exists():
             candidates.extend(path for path in root.rglob("*") if path.is_file())
+
+    root_answer = project_root / "answer.csv"
+    if root_answer.exists():
+        candidates.append(root_answer)
 
     allowed = {".csv", ".json", ".yaml", ".yml", ".parquet", ".ipynb", ".md"}
     return sorted({path for path in candidates if path.suffix.lower() in allowed})
