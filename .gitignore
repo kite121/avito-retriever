@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+
+# Reproducible outputs and downloaded assets
+artifacts/cache/
+artifacts/images/
+artifacts/ocr/
+artifacts/indexes/
+artifacts/embeddings/
+artifacts/runs/
+artifacts/submissions/
+artifacts/notebook_results/
+artifacts/analysis_bundles/
+
+# Downloaded model weights
+models/

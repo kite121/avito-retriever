@@ -1,0 +1,17 @@
+extends: ../base.yaml
+
+project:
+  name: hybrid-bm25f-dense-knn
+
+retrieval:
+  dense:
+    enabled: true
+  knn:
+    enabled: true
+
+fusion:
+  inputs:
+    bm25f: 1.0
+    dense: 1.0
+    knn: 0.7
+

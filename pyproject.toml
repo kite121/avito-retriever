@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avito-retriever"
+version = "0.1.0"
+description = "Configurable hybrid retriever for Avito help-center articles"
+requires-python = ">=3.11"
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "joblib>=1.4",
+  "lxml>=5.2",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyarrow>=16",
+  "pyyaml>=6.0",
+  "requests>=2.32",
+  "scikit-learn>=1.5",
+  "scipy>=1.13",
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+lexical = ["sentencepiece>=0.2"]
+neural = [
+  "accelerate>=0.33",
+  "sentence-transformers>=3.0",
+  "torch>=2.3",
+  "transformers>=4.43",
+]
+ocr = [
+  "paddleocr>=3.0",
+  "pillow>=10.4",
+  "pytesseract>=0.3.13",
+]
+dev = [
+  "jupyterlab>=4.2",
+  "pytest>=8.2",
+  "ruff>=0.5",
+]
+
+[project.scripts]
+avito-evaluate = "avito_retriever.cli.evaluate:app"
+avito-compare = "avito_retriever.cli.compare:app"
+avito-validate-submission = "avito_retriever.cli.validate_submission:app"
+avito-run = "avito_retriever.cli.run:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

@@ -1,0 +1,149 @@
+project:
+  name: avito-retriever
+  seed: 42
+
+paths:
+  data_dir: /Users/kite/Downloads/candidate_public/candidate_data
+  artifacts_dir: artifacts
+  parsed_articles: artifacts/cache/parsed_articles.parquet
+  image_dir: artifacts/images
+  ocr_dir: artifacts/ocr
+  index_dir: artifacts/indexes
+  embedding_dir: artifacts/embeddings
+  run_dir: artifacts/runs
+  submission_dir: artifacts/submissions
+
+preprocessing:
+  html:
+    parser: lxml
+    keep_image_alt: true
+    keep_link_text: true
+    deduplicate_blocks: true
+    remove_tags: [input, script, style, noscript, svg]
+  normalization:
+    unicode_form: NFKC
+    lowercase: true
+    replace_yo: true
+    normalize_quotes: true
+    normalize_dashes: true
+  images:
+    enabled: false
+    request_timeout_seconds: 20
+    retries: 3
+    deduplicate_by_sha256: true
+    tile_long_images: true
+    tile_overlap_px: 96
+  ocr:
+    enabled: false
+    engine: paddleocr
+    language: ru
+    version: PP-OCRv5
+    confidence_threshold: 0.50
+    tesseract_fallback: false
+    tesseract_languages: rus+eng
+
+chunking:
+  enabled: true
+  size_tokens: 256
+  overlap_tokens: 48
+  respect_sections: true
+  attach_image_context: true
+
+sentencepiece:
+  model_type: unigram
+  vocab_size: 8000
+  character_coverage: 1.0
+  byte_fallback: true
+  train_on_calibration_queries: true
+
+retrieval:
+  bm25f:
+    enabled: true
+    top_k: 100
+    k1: 1.5
+    fields:
+      title: {weight: 5.0, b: 0.25}
+      headings: {weight: 3.0, b: 0.40}
+      ui_labels: {weight: 2.5, b: 0.30}
+      body: {weight: 1.0, b: 0.75}
+      tables: {weight: 1.0, b: 0.60}
+      image_alt: {weight: 0.8, b: 0.30}
+      image_ocr: {weight: 0.5, b: 0.50}
+  dense:
+    enabled: false
+    model_name: deepvk/USER-bge-m3
+    batch_size: 32
+    top_k_chunks: 200
+    top_k_articles: 100
+    article_aggregation: max
+    device: auto
+  knn:
+    enabled: false
+    top_k: 10
+    lexical:
+      enabled: true
+      method: sentencepiece_bm25
+      k1: 1.2
+      b: 0.30
+      depth: 30
+    dense:
+      enabled: true
+      depth: 30
+    neighbour_fusion:
+      method: rrf
+      rrf_k: 20
+      lexical_weight: 1.0
+      dense_weight: 1.0
+    vote:
+      normalize_by_label_count: false
+      similarity_power: 1.0
+    confidence:
+      enabled: true
+      minimum_dense_similarity: 0.55
+      agreement_weight: 0.5
+  centroids:
+    enabled: false
+
+fusion:
+  method: weighted_rrf
+  rrf_k: 40
+  candidate_depth: 50
+  inputs:
+    bm25f: 1.0
+    dense: 1.0
+    knn: 0.7
+    centroids: 0.0
+
+reranker:
+  enabled: false
+  model_name: BAAI/bge-reranker-v2-m3
+  candidate_depth: 50
+  chunks_per_article: 2
+  article_aggregation: max
+  batch_size: 16
+  max_length: 1024
+  device: auto
+
+final_ranking:
+  method: weighted_scores
+  top_k: 10
+  weights:
+    reranker: 1.0
+    rrf: 0.25
+    bm25f: 0.10
+    dense: 0.10
+    knn: 0.05
+
+evaluation:
+  k: 10
+  candidate_recall_depths: [20, 50, 100]
+  cross_validation:
+    enabled: true
+    folds: 5
+    seed: 42
+    group_near_duplicates: true
+  significance:
+    bootstrap_samples: 10000
+    permutation_samples: 10000
+    confidence_level: 0.95
+

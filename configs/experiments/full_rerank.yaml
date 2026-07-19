@@ -1,0 +1,14 @@
+extends: hybrid_knn.yaml
+
+project:
+  name: full-rerank
+
+preprocessing:
+  images:
+    enabled: true
+  ocr:
+    enabled: true
+
+reranker:
+  enabled: true
+

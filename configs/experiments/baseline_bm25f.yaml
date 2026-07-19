@@ -1,0 +1,33 @@
+extends: ../base.yaml
+
+project:
+  name: baseline-bm25f
+
+preprocessing:
+  images:
+    enabled: false
+  ocr:
+    enabled: false
+
+retrieval:
+  dense:
+    enabled: false
+  knn:
+    enabled: false
+  centroids:
+    enabled: false
+
+fusion:
+  candidate_depth: 100
+  inputs:
+    bm25f: 1.0
+    dense: 0.0
+    knn: 0.0
+    centroids: 0.0
+
+reranker:
+  enabled: false
+
+final_ranking:
+  method: bm25f
+
